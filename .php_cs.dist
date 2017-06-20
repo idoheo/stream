@@ -1,0 +1,106 @@
+<?php
+
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+
+$header = file_get_contents(__DIR__.'/header.txt');
+
+
+return PhpCsFixer\Config::create()
+    ->setRiskyAllowed(true)
+    ->setRules([
+        '@PSR2' => true,
+        '@Symfony' => true,
+        '@Symfony:risky' => true,
+        '@PHP70Migration' => true,
+        '@PHP70Migration:risky' => true,
+        '@PHP71Migration' => true,
+        'array_syntax' => array(
+            'syntax' => 'short',
+        ),
+        'binary_operator_spaces' => array(
+            'align_double_arrow' => true,
+            'align_equals' => true,
+        ),
+        'braces' => array(
+            'allow_single_line_closure' => false,
+            'position_after_functions_and_oop_constructs' => 'next',
+        ),
+        'class_definition' => array(
+            'multiLineExtendsEachSingleLine' => true,
+            'singleItemSingleLine' => true,
+            'singleLine' => false,
+        ),
+        'class_keyword_remove' => false,
+        'combine_consecutive_unsets' => true,
+        'concat_space' => array(
+            'spacing' => 'none',
+        ),
+        'declare_equal_normalize' => array(
+            'space' => 'none',
+        ),
+        'doctrine_annotation_braces' => array(
+            'syntax' => 'without_braces',
+        ),
+        'doctrine_annotation_indentation' => array(
+
+        ),
+        'doctrine_annotation_spaces' => array(
+            'around_argument_assignments' => true,
+            'around_array_assignments' => true,
+            'around_commas' => true,
+            'around_parentheses' => true,
+        ),
+        'function_declaration' => array(
+            'closure_function_spacing' => 'one',
+        ),
+        'header_comment' => array(
+            'commentType' => 'comment',
+            'header' => $header,
+            'location' => 'after_declare_strict',
+            'separate' => 'both',
+        ),
+        'is_null' => array(
+            'use_yoda_style' => true,
+        ),
+        'linebreak_after_opening_tag' => true,
+        'list_syntax' => false,
+        'mb_str_functions' => true,
+        'method_argument_space' => array(
+            'keep_multiple_spaces_after_comma' => false,
+        ),
+        'native_function_invocation' => array(
+            'exclude' => array(),
+        ),
+        'no_mixed_echo_print' => array(
+            'use' => 'echo',
+        ),
+        'no_multiline_whitespace_before_semicolons' => true,
+        'no_short_echo_tag' => true,
+        'no_unreachable_default_argument_value' => false,
+        'no_useless_else' => true,
+        'no_useless_return' => true,
+        'ordered_imports' => array(
+            'sortAlgorithm' => 'alpha',
+        ),
+        'php_unit_test_class_requires_covers' => true,
+        'phpdoc_add_missing_param_annotation' => array(
+            'only_untyped' => false,
+        ),
+        'phpdoc_order' => true,
+        'phpdoc_return_self_reference' => true,
+        'pow_to_exponentiation' => false,
+        'semicolon_after_instruction' => true,
+        'simplified_null_return' => false,
+        'ternary_to_null_coalescing' => false,
+    ])
+    ->setFinder(
+        PhpCsFixer\Finder::create()
+            ->in(
+                array(
+                    __DIR__.'/src',
+                    __DIR__.'/tests'
+                )
+            )
+    )
+    ;

@@ -1,0 +1,16 @@
+language: 'php'
+
+php:
+  - '7.1'
+
+cache:
+  directories:
+    - "$HOME/.composer/cache/files"
+
+before_install:
+  - composer self-update
+
+install:
+  - composer update --prefer-source
+
+script: vendor/bin/php-unit --coverage-text
