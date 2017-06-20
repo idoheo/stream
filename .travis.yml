@@ -13,4 +13,4 @@ before_install:
 install:
   - composer update --prefer-source
 
-script: vendor/bin/php-unit --coverage-text
+script: vendor/bin/phpunit --coverage-text
