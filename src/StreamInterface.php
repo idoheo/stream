@@ -258,6 +258,19 @@ interface StreamInterface
     public function write(string $string): int;
 
     /**
+     * Write data to the stream, ending with new line character.
+     *
+     * @param string $string  the string that is to be written
+     * @param string $newLine new line character to use
+     *
+     * @throws RuntimeException on failure
+     * @throws LogicException   if called on non-writable stream
+     *
+     * @return int returns the number of bytes written to the stream
+     */
+    public function writeLine(string $string, string $newLine = PHP_EOL): int;
+
+    /**
      * Returns whether or not the stream is readable.
      *
      * @return bool TRUE is stream is readable, FALSE if not

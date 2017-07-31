@@ -465,6 +465,52 @@ class AbstractStreamTest extends TestCase
     }
 
     /**
+     * @covers ::writeLine
+     */
+    public function testWriteLine()
+    {
+        foreach (["\n", "\r\n", PHP_EOL] as $newLine) {
+            $string = 'some - string -'.\implode('', \array_fill(\random_int(10, 20), \random_int(25, 35), 'x'));
+            $len    = \mb_strlen($string.$newLine);
+
+            $this->abstractStream
+                ->expects(static::at(0))
+                ->method('write')
+                ->with(\sprintf('%s%s', $string, $newLine))
+                ->willReturn($len);
+
+            static::assertSame(
+                $len,
+                $this->abstractStream->writeLine($string, $newLine),
+                \sprintf(
+                    '%s::%s() should have returned number of characters written.',
+                    $this->abstractStreamClass,
+                    'writeLine'
+                )
+            );
+        }
+
+        $string = 'some - string -'.\implode('', \array_fill(\random_int(10, 20), \random_int(25, 35), 'x'));
+        $len    = \mb_strlen($string.PHP_EOL);
+
+        $this->abstractStream
+            ->expects(static::at(0))
+            ->method('write')
+            ->with(\sprintf('%s%s', $string, PHP_EOL))
+            ->willReturn($len);
+
+        static::assertSame(
+            $len,
+            $this->abstractStream->writeLine($string),
+            \sprintf(
+                '%s::%s() should have returned number of characters written.',
+                $this->abstractStreamClass,
+                'writeLine'
+            )
+        );
+    }
+
+    /**
      * @covers ::getSize
      *
      * @depends testGetMetadataKey

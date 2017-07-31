@@ -139,6 +139,14 @@ abstract class AbstractStream implements StreamInterface
     /**
      * {@inheritdoc}
      */
+    public function writeLine(string $string, string $newLine = PHP_EOL): int
+    {
+        return $this->write(\sprintf('%s%s', $string, $newLine));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getSize(): ?int
     {
         return $this->getStatKey('size');
