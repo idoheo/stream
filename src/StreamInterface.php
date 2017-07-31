@@ -296,6 +296,33 @@ interface StreamInterface
     public function readLine(int $length = 0): string;
 
     /**
+     * Checks if stream is blocked (in blocking mode).
+     *
+     * @return bool TRUE if in blocking mode, FALSE otherwise
+     */
+    public function isBlocking(): bool;
+
+    /**
+     * Set blocking/non-blocking mode on a stream.
+     *
+     * @param bool $blocking If mode is FALSE, the given stream will be switched to non-blocking mode,
+     *                       and if TRUE, it will be switched to blocking mode. This affects calls
+     *                       that read from the stream. In non-blocking mode a read call will always
+     *                       return right away while in blocking mode it will wait for data to become
+     *                       available on the stream.
+     *
+     * @throws RuntimeException on failure
+     */
+    public function setBlocking(bool $blocking): void;
+
+    /**
+     * Checks if stream is local.
+     *
+     * @return bool
+     */
+    public function isLocal(): bool;
+
+    /**
      * Returns the current position of the file read/write pointer.
      *
      * @throws RuntimeException on error

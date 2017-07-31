@@ -19,6 +19,7 @@ use InvalidArgumentException;
 use LengthException;
 use LogicException;
 use RuntimeException;
+use Symfony\Component\Process\Process;
 
 /**
  * @coversDefaultClass \Idoheo\Stream\Stream
@@ -35,11 +36,14 @@ class StreamTest extends TestCase
      */
     private $resource;
 
+    private $tearDownCallback = null;
+
     protected function setUp()
     {
         parent::setUp();
-        $this->resource = \tmpfile();
-        $this->stream   = new Stream($this->resource);
+        $this->resource         = \tmpfile();
+        $this->stream           = new Stream($this->resource);
+        $this->tearDownCallback =null;
     }
 
     protected function tearDown()
@@ -49,6 +53,10 @@ class StreamTest extends TestCase
             \fclose($this->resource);
         }
         $this->resource = null;
+        if (\is_callable($this->tearDownCallback)) {
+            \call_user_func_array($this->tearDownCallback, []);
+        }
+        $this->tearDownCallback = null;
         parent::tearDown();
     }
 
@@ -837,6 +845,117 @@ class StreamTest extends TestCase
     }
 
     /**
+     * @covers ::setBlocking
+     * @depends testConstruct
+     */
+    public function testSetBlocking__success()
+    {
+        foreach ([true, false] as $blocking) {
+            $this->stream->setBlocking($blocking);
+            $metadata = \stream_get_meta_data($this->resource);
+
+            static::assertSame(
+                $metadata['blocked'],
+                $blocking,
+                \sprintf(
+                    '%s::%s() failed to set blocking mode.',
+                    \get_class($this->stream),
+                    'setBlocking'
+                )
+            );
+        }
+    }
+
+    /**
+     * @covers ::setBlocking
+     * @depends testConstruct
+     * @depends testSetBlocking__success
+     */
+    public function testSetBlocking__failure()
+    {
+        $class = \get_class($this->stream);
+        $mock  = $this
+            ->getMockBuilder($class)
+            ->setConstructorArgs([$this->resource])
+            ->setMethods(['isOpen'])
+            ->getMock();
+        \fclose($this->resource);
+
+        $mock->expects(static::any())->method('isOpen')->willReturn(true);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(
+            'Failed setting blocking mode on a stream.'
+        );
+
+        $mock->setBlocking(true);
+    }
+
+    /**
+     * @covers ::isLocal
+     * @depends testConstruct
+     */
+    public function testIsLocal__success()
+    {
+        // Local
+        static::assertTrue(
+            $this->stream->isLocal(),
+            \sprintf(
+                '%s::%s() should return true for a local resource.',
+                \get_class($this->stream),
+                'isLocal'
+            )
+        );
+
+        // Close local
+        $this->stream->close();
+        $this->stream   = null;
+        $this->resource = null;
+
+        // Open Remote
+        $port     = \random_int(45000, 45999);
+        $lifetime = 3;
+        $process  = new Process(
+            \sprintf(
+                'timeout %d php -S 127.0.0.1:%d -t %s',
+                $lifetime,
+                $port,
+                \realpath(__DIR__.'/../test_server')
+            )
+        );
+
+        $start = \time();
+        $process->start();
+        \sleep(1);
+
+        if (!$process->isRunning()) {
+            $this->fail('Failed to start local PHP server: '.$process->getErrorOutput());
+        }
+
+        $path           = \sprintf('http://127.0.0.1:%d/file.txt', $port);
+        $this->resource = \fopen($path, 'r');
+        $this->stream   = new Stream($this->resource);
+        $local          = $this->stream->isLocal();
+
+        $timeout = 10;
+        $process->stop($timeout);
+
+        do {
+            \usleep(1);
+        } while ($process->isRunning() && $start + $lifetime >= \time());
+
+        // Remote
+        static::assertFalse(
+            $local,
+            \sprintf(
+                '%s::%s() should return false for a non local resource.',
+                \get_class($this->stream),
+                'isLocal'
+            )
+        );
+    }
+
+    /**
      * @covers ::tell
      * @depends testConstruct
      */
@@ -878,7 +997,7 @@ class StreamTest extends TestCase
         static::assertNull(
             $this->stream->tell(),
             \sprintf(
-                '%s::%s() failed to return expected value for closed stram.',
+                '%s::%s() failed to return expected value for closed stream.',
                 \get_class($this->stream),
                 'tell'
             )

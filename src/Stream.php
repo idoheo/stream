@@ -35,9 +35,11 @@ class Stream extends AbstractStream
      */
     public function __construct($stream)
     {
-        if (!(\is_resource($stream) && \get_resource_type($stream) === 'stream')) {
+        $metadata = \is_resource($stream) ? @\stream_get_meta_data($stream) : null;
+
+        if (!(\is_array($metadata) && \array_key_exists('stream_type', $metadata))) {
             throw new InvalidArgumentException(
-                'Expecting stream resource in constructor.'
+                'Expecting a stream resource.'
             );
         }
 
@@ -57,7 +59,9 @@ class Stream extends AbstractStream
      */
     public function isOpen(): bool
     {
-        return \is_resource($this->stream) && \get_resource_type($this->stream) === 'stream';
+        $metadata = \is_resource($this->stream) ? @\stream_get_meta_data($this->stream) : null;
+
+        return \is_array($metadata) && \array_key_exists('stream_type', $metadata);
     }
 
     /**
@@ -267,6 +271,23 @@ class Stream extends AbstractStream
         }
 
         return $read;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setBlocking(bool $blocking): void
+    {
+        if (false === ($this->isOpen() ? @\stream_set_blocking($this->stream, $blocking) : false)) {
+            throw new RuntimeException(
+                'Failed setting blocking mode on a stream.'
+            );
+        }
+    }
+
+    public function isLocal(): bool
+    {
+        return $this->isOpen() && @\stream_is_local($this->stream);
     }
 
     /**

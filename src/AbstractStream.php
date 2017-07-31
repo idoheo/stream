@@ -63,6 +63,14 @@ abstract class AbstractStream implements StreamInterface
     /**
      * {@inheritdoc}
      */
+    public function isBlocking(): bool
+    {
+        return \filter_var($this->getMetadataKey('blocked'), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function lockExclusive(bool $nonBlocking = false): void
     {
         $this->lock(LOCK_EX | ($nonBlocking ? LOCK_NB : 0));

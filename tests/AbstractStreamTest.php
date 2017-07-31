@@ -196,6 +196,34 @@ class AbstractStreamTest extends TestCase
     }
 
     /**
+     * @covers ::isBlocking
+     * @depends testGetMetadataKey
+     */
+    public function testIsBlocking__success()
+    {
+        foreach ([true, false] as $blocking) {
+            $metaData = [
+                'blocked' => $blocking,
+            ];
+
+            $this->abstractStream
+                ->expects(static::at(0))
+                ->method('getMetadata')
+                ->willReturn($metaData);
+
+            static::assertSame(
+                $blocking,
+                $this->abstractStream->isBlocking(),
+                \sprintf(
+                    '%s::%s() failed returning expected result.',
+                    $this->abstractStreamClass,
+                    'isBlocked'
+                )
+            );
+        }
+    }
+
+    /**
      * @covers ::lockShared
      */
     public function testLockShared()
