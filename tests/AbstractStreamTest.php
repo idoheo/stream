@@ -215,7 +215,7 @@ class AbstractStreamTest extends TestCase
                 '%s::%s() failed to return value provided in metadata key %s.',
                 $this->abstractStreamClass,
                 'getType',
-                'uri'
+                'stream_type'
             )
         );
 

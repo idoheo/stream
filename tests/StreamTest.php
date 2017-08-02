@@ -12,13 +12,17 @@ declare(strict_types=1);
 
 namespace Idoheo\Tests\Stream;
 
-use DomainException;
+use Idoheo\Stream\Exception\DomainException;
+use Idoheo\Stream\Exception\InvalidArgumentException;
+use Idoheo\Stream\Exception\LengthException;
+use Idoheo\Stream\Exception\LogicException;
+use Idoheo\Stream\Exception\NotLockableException;
+use Idoheo\Stream\Exception\NotReadableException;
+use Idoheo\Stream\Exception\NotSeekableException;
+use Idoheo\Stream\Exception\NotWritableException;
+use Idoheo\Stream\Exception\RuntimeException;
 use Idoheo\Stream\Stream;
 use Idoheo\Stream\StreamInterface;
-use InvalidArgumentException;
-use LengthException;
-use LogicException;
-use RuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -398,8 +402,7 @@ class StreamTest extends TestCase
         }
 
         \fclose($this->resource);
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not lockable.');
+        $this->expectException(NotLockableException::class);
         $this->stream->lock(LOCK_UN | LOCK_NB);
     }
 
@@ -542,8 +545,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdin', 'r');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not seekable.');
+        $this->expectException(NotSeekableException::class);
 
         $this->stream->seek(0, 0);
     }
@@ -615,8 +617,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdin', 'r');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not writable.');
+        $this->expectException(NotWritableException::class);
 
         $this->stream->write('');
     }
@@ -692,8 +693,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdout', 'w');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not readable.');
+        $this->expectException(NotReadableException::class);
 
         $this->stream->read(1);
     }
@@ -880,8 +880,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdout', 'w');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not readable.');
+        $this->expectException(NotReadableException::class);
 
         $this->stream->readLine();
     }
@@ -1150,10 +1149,7 @@ class StreamTest extends TestCase
         $this->stream   = new $class($this->resource);
 
         $len = \random_int(10, 20);
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage(
-            'Stream is not writable.'
-        );
+        $this->expectException(NotWritableException::class);
         $this->stream->truncate($len);
     }
 
@@ -1232,8 +1228,7 @@ class StreamTest extends TestCase
     public function testGetContents__failure__notReadable()
     {
         \fclose($this->resource);
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not readable.');
+        $this->expectException(NotReadableException::class);
         $this->stream->getContents();
     }
 
@@ -1340,8 +1335,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdin', 'r');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not writable.');
+        $this->expectException(NotWritableException::class);
 
         $this->stream->writeCsv([]);
     }
@@ -1570,8 +1564,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdout', 'w');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not readable.');
+        $this->expectException(NotReadableException::class);
 
         $this->stream->readCsv();
     }
@@ -1970,8 +1963,7 @@ class StreamTest extends TestCase
         \fclose($this->resource);
         $mock->expects(static::any())->method('isReadable')->willReturn(false);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Source stream is not readable.');
+        $this->expectException(NotReadableException::class);
 
         $mock->copyToStream($this->stream);
     }
@@ -1990,8 +1982,7 @@ class StreamTest extends TestCase
             ->getMock();
         $mock->expects(static::any())->method('isWritable')->willReturn(false);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Target stream is not writable.');
+        $this->expectException(NotWritableException::class);
 
         $this->stream->copyToStream($mock);
     }
@@ -2070,8 +2061,7 @@ class StreamTest extends TestCase
         $this->resource = \fopen('php://stdout', 'w');
         $this->stream   = new $class($this->resource);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Stream is not readable.');
+        $this->expectException(NotReadableException::class);
 
         try {
             \ob_start();

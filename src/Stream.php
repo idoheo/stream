@@ -12,11 +12,15 @@ declare(strict_types=1);
 
 namespace Idoheo\Stream;
 
-use DomainException;
-use InvalidArgumentException;
-use LengthException;
-use LogicException;
-use RuntimeException;
+use Idoheo\Stream\Exception\DomainException;
+use Idoheo\Stream\Exception\InvalidArgumentException;
+use Idoheo\Stream\Exception\LengthException;
+use Idoheo\Stream\Exception\LogicException;
+use Idoheo\Stream\Exception\NotLockableException;
+use Idoheo\Stream\Exception\NotReadableException;
+use Idoheo\Stream\Exception\NotSeekableException;
+use Idoheo\Stream\Exception\NotWritableException;
+use Idoheo\Stream\Exception\RuntimeException;
 
 /**
  * Class Stream.
@@ -128,9 +132,7 @@ class Stream extends AbstractStream
     public function lock(int $lock, &$wouldBlock = null): void
     {
         if (!$this->isLockable()) {
-            throw new LogicException(
-                'Stream is not lockable.'
-            );
+            throw new NotLockableException($this);
         }
 
         $success = \flock($this->stream, $lock, $wouldBlock);
@@ -176,9 +178,7 @@ class Stream extends AbstractStream
         }
 
         if ($this->isSeekable() !== true) {
-            throw new LogicException(
-                'Stream is not seekable.'
-            );
+            throw new NotSeekableException($this);
         }
 
         if (0 !== @\fseek($this->stream, $offset, $whence)) {
@@ -196,9 +196,7 @@ class Stream extends AbstractStream
     public function write(string $string): int
     {
         if (!$this->isWritable()) {
-            throw new LogicException(
-                'Stream is not writable.'
-            );
+            throw new NotWritableException($this);
         }
 
         if (false === $written = @\fwrite($this->stream, $string)) {
@@ -225,9 +223,7 @@ class Stream extends AbstractStream
         }
 
         if (!$this->isReadable()) {
-            throw new LogicException(
-                'Stream is not readable.'
-            );
+            throw new NotReadableException($this);
         }
 
         if (false === $read = @\fread($this->stream, $length)) {
@@ -257,9 +253,7 @@ class Stream extends AbstractStream
         }
 
         if (!$this->isReadable()) {
-            throw new LogicException(
-                'Stream is not readable.'
-            );
+            throw new NotReadableException($this);
         }
 
         $wasEof = $this->eof();
@@ -328,9 +322,7 @@ class Stream extends AbstractStream
         }
 
         if (!$this->isWritable()) {
-            throw new LogicException(
-                'Stream is not writable.'
-            );
+            throw new NotWritableException($this);
         }
 
         if (false === @\ftruncate($this->stream, $length)) {
@@ -385,9 +377,7 @@ class Stream extends AbstractStream
         }
 
         if (!$this->isWritable()) {
-            throw new LogicException(
-                'Stream is not writable.'
-            );
+            throw new NotWritableException($this);
         }
 
         if (false === $result = @\fputcsv($this->stream, $fields, $delimiter, $enclosure, $escapeChar)) {
@@ -450,9 +440,7 @@ class Stream extends AbstractStream
         }
 
         if (!$this->isReadable()) {
-            throw new LogicException(
-                'Stream is not readable.'
-            );
+            throw new NotReadableException($this);
         }
 
         if (false === $result = \fgetcsv($this->stream, $length, $delimiter, $enclosure, $escapeChar)) {
@@ -470,9 +458,7 @@ class Stream extends AbstractStream
     public function getContents(): string
     {
         if (!$this->isReadable()) {
-            throw new LogicException(
-                'Stream is not readable.'
-            );
+            throw new NotReadableException($this);
         }
 
         if (false === $read = @\stream_get_contents($this->stream)) {
@@ -487,15 +473,11 @@ class Stream extends AbstractStream
     public function copyToStream(StreamInterface $targetStream, int $maxLength = null, int $chunkSize = 1024): int
     {
         if (!$this->isReadable()) {
-            throw new LogicException(
-                'Source stream is not readable.'
-            );
+            throw new NotReadableException($this);
         }
 
         if (!$targetStream->isWritable()) {
-            throw new LogicException(
-                'Target stream is not writable.'
-            );
+            throw new NotWritableException($targetStream);
         }
 
         if ($chunkSize < 1) {
@@ -540,9 +522,7 @@ class Stream extends AbstractStream
     public function output(): int
     {
         if (!$this->isReadable()) {
-            throw new LogicException(
-                'Stream is not readable.'
-            );
+            throw new NotReadableException($this);
         }
 
         if (false === $result = @\fpassthru($this->stream)) {

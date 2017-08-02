@@ -13,6 +13,10 @@ declare(strict_types=1);
 namespace Idoheo\Stream;
 
 use DomainException;
+use Idoheo\Stream\Exception\NotLockableException;
+use Idoheo\Stream\Exception\NotReadableException;
+use Idoheo\Stream\Exception\NotSeekableException;
+use Idoheo\Stream\Exception\NotWritableException;
 use LengthException;
 use LogicException;
 use RuntimeException;
@@ -137,8 +141,8 @@ interface StreamInterface
      * @param int  $lock       Lock flag (LOCK_* constants)
      * @param bool $wouldBlock if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
-     * @throws LogicException   if called on non-open stream
-     * @throws RuntimeException on failure
+     * @throws NotLockableException if called on non-lockable stream
+     * @throws RuntimeException     on failure
      */
     public function lock(int $lock, &$wouldBlock = null): void;
 
@@ -150,8 +154,8 @@ interface StreamInterface
      * @param bool $nonBlocking TRUE if lock operation should not block, FALSE otherwise (default: FALSE)
      * @param bool $wouldBlock  if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
-     * @throws LogicException   if called on non-open stream
-     * @throws RuntimeException on failure
+     * @throws NotLockableException if called on non-lockable stream
+     * @throws RuntimeException     on failure
      */
     public function lockExclusive(bool $nonBlocking = false, &$wouldBlock = null): void;
 
@@ -163,8 +167,8 @@ interface StreamInterface
      * @param bool $nonBlocking TRUE if lock operation should not block, FALSE otherwise (default: FALSE)
      * @param bool $wouldBlock  if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
-     * @throws LogicException   if called on non-open stream
-     * @throws RuntimeException on failure
+     * @throws NotLockableException if called on non-lockable stream
+     * @throws RuntimeException     on failure
      */
     public function lockShared(bool $nonBlocking = false, &$wouldBlock = null): void;
 
@@ -176,8 +180,8 @@ interface StreamInterface
      * @param bool $nonBlocking TRUE if lock operation should not block, FALSE otherwise (default: FALSE)
      * @param bool $wouldBlock  if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
-     * @throws LogicException   if called on non-open stream
-     * @throws RuntimeException on failure
+     * @throws NotLockableException if called on non-lockable stream
+     * @throws RuntimeException     on failure
      */
     public function unlock(bool $nonBlocking = false, &$wouldBlock = null): void;
 
@@ -200,9 +204,9 @@ interface StreamInterface
      *                    offset bytes SEEK_CUR: Set position to current location plus offset
      *                    SEEK_END: Set position to end-of-stream plus offset.
      *
-     * @throws DomainException  if $whence is not one of SEEK_* constants
-     * @throws LogicException   if called on non-seekable stream
-     * @throws RuntimeException on failure
+     * @throws DomainException      if $whence is not one of SEEK_* constants
+     * @throws NotSeekableException if called on non-seekable stream
+     * @throws RuntimeException     on failure
      */
     public function seek(int $offset, int $whence = SEEK_SET): void;
 
@@ -215,8 +219,8 @@ interface StreamInterface
      * @see seek()
      * @see http://www.php.net/manual/en/function.fseek.php
      *
-     * @throws LogicException   if called on non-seekable stream
-     * @throws RuntimeException on failure
+     * @throws NotSeekableException if called on non-seekable stream
+     * @throws RuntimeException     on failure
      */
     public function rewind(): void;
 
@@ -229,8 +233,8 @@ interface StreamInterface
      * @see seek()
      * @see http://www.php.net/manual/en/function.fseek.php
      *
-     * @throws LogicException   if called on non-seekable stream
-     * @throws RuntimeException on failure
+     * @throws NotSeekableException if called on non-seekable stream
+     * @throws RuntimeException     on failure
      */
     public function fastForward(): void;
 
@@ -246,8 +250,8 @@ interface StreamInterface
      *
      * @param string $string the string that is to be written
      *
-     * @throws RuntimeException on failure
-     * @throws LogicException   if called on non-writable stream
+     * @throws RuntimeException     on failure
+     * @throws NotWritableException if called on non-writable stream
      *
      * @return int returns the number of bytes written to the stream
      */
@@ -259,8 +263,8 @@ interface StreamInterface
      * @param string $string  the string that is to be written
      * @param string $newLine new line character to use
      *
-     * @throws RuntimeException on failure
-     * @throws LogicException   if called on non-writable stream
+     * @throws RuntimeException     on failure
+     * @throws NotWritableException if called on non-writable stream
      *
      * @return int returns the number of bytes written to the stream
      */
@@ -280,9 +284,9 @@ interface StreamInterface
      *                    them. Fewer than $length bytes may be returned if underlying stream
      *                    call returns fewer bytes.
      *
-     * @throws DomainException  if length is set to a negative value
-     * @throws LogicException   if called on non-readable stream
-     * @throws RuntimeException if an error occurs
+     * @throws DomainException      if length is set to a negative value
+     * @throws NotReadableException if called on non-readable stream
+     * @throws RuntimeException     if an error occurs
      *
      * @return string returns the data read from the stream, or an empty string
      *                if no bytes are available
@@ -296,9 +300,9 @@ interface StreamInterface
      *                    return value), or an EOF (whichever comes first). If specified length is 0 (default), it will
      *                    keep reading from the stream until it reaches the end of the line.
      *
-     * @throws DomainException  if length is set to a negative value
-     * @throws LogicException   if called on non-readable stream
-     * @throws RuntimeException if an error occurs (including EOF)
+     * @throws DomainException      if length is set to a negative value
+     * @throws NotReadableException if called on non-readable stream
+     * @throws RuntimeException     if an error occurs (including EOF)
      *
      * @return string returns the data read from the stream
      */
@@ -368,9 +372,9 @@ interface StreamInterface
      *
      * @param int $length the size to truncate to
      *
-     * @throws DomainException  if $length is less then 0
-     * @throws LogicException   if stream is not writable
-     * @throws RuntimeException on failure
+     * @throws DomainException      if $length is less then 0
+     * @throws NotWritableException if called on non-writable stream
+     * @throws RuntimeException     on failure
      */
     public function truncate(int $length): void;
 
@@ -384,9 +388,10 @@ interface StreamInterface
      *
      * @see http://php.net/manual/en/function.fputcsv.php
      *
-     * @throws LogicException   if stream is not writable or all optional character parameters are note unique
-     * @throws LengthException  if any of optional character parameters is not exactly one character
-     * @throws RuntimeException on failure
+     * @throws LengthException      if any of optional character parameters is not exactly one character
+     * @throws LogicException       if optional character parameters are note unique
+     * @throws NotWritableException if called on non-writable stream
+     * @throws RuntimeException     on failure
      *
      * @return int The length of the written string
      */
@@ -403,11 +408,13 @@ interface StreamInterface
      * @param string $escapeChar the optional escapeChar parameter sets the escape character (one character only)
      *
      * @see http://php.net/manual/en/function.fputcsv.php
+
      *
-     * @throws DomainException  if $length is less then 0
-     * @throws LogicException   if stream is not readable or all optional character parameters are note unique
-     * @throws LengthException  if any of optional character parameters is not exactly one character
-     * @throws RuntimeException on failure
+     * @throws DomainException      if $length is less then 0
+     * @throws LengthException      if any of optional character parameters is not exactly one character
+     * @throws LogicException       if optional character parameters are note unique
+     * @throws NotReadableException if called on non-readable stream*
+     * @throws RuntimeException     on failure
      *
      * @return array an indexed array containing the fields read
      */
@@ -416,9 +423,9 @@ interface StreamInterface
     /**
      * Returns the remaining contents in a string.
      *
-     * @throws RuntimeException if unable to read or an error occurs while
-     *                          reading
-     * @throws LogicException   if called on non-readable stream
+     * @throws RuntimeException     if unable to read or an error occurs while
+     *                              reading
+     * @throws NotReadableException if called on non-readable stream
      *
      * @return string
      */
@@ -442,9 +449,10 @@ interface StreamInterface
      * @param int|null        $maxLength    Maximum bytes to copy
      * @param int             $chunkSize    Chunk size for read->write operations
      *
-     * @throws LogicException   if source is not readable or target writable
-     * @throws DomainException  if $chunkSize is 0 or less
-     * @throws RuntimeException on failure
+     * @throws NotReadableException if called on non-readable stream
+     * @throws NotWritableException if called with non-writable stream
+     * @throws DomainException      if $chunkSize is 0 or less
+     * @throws RuntimeException     on failure
      *
      * @return int Total number of bytes copied
      */
@@ -453,8 +461,8 @@ interface StreamInterface
     /**
      * Output all remaining data in the stream.
      *
-     * @throws LogicException   if stream is not readable
-     * @throws RuntimeException on failure
+     * @throws NotReadableException if called on non-readable stream
+     * @throws RuntimeException     on failure
      *
      * @return int number of characters read from stream and passed through to the output
      */
