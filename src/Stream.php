@@ -443,13 +443,17 @@ class Stream extends AbstractStream
             throw new NotReadableException($this);
         }
 
+        $wasEof = $this->eof();
         if (false === $result = \fgetcsv($this->stream, $length, $delimiter, $enclosure, $escapeChar)) {
+            if (!$wasEof && $this->eof()) {
+                return [];
+            }
             throw new RuntimeException(
                 'Failed reading CSV from stream.'
             );
         }
 
-        return $result;
+        return $result === [null] ? [] : $result;
     }
 
     /**

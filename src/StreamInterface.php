@@ -416,7 +416,7 @@ interface StreamInterface
      * @throws NotReadableException if called on non-readable stream*
      * @throws RuntimeException     on failure
      *
-     * @return array an indexed array containing the fields read
+     * @return array an indexed array containing the fields read (empty array for empty lines)
      */
     public function readCsv(int $length = 0, string $delimiter = ',', string $enclosure = '"', string $escapeChar = '\\'): array;
 

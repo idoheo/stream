@@ -1534,6 +1534,35 @@ class StreamTest extends TestCase
             );
         }
 
+        $resource = \tmpfile();
+        $class    = \get_class($this->stream);
+        $stream   = new $class($resource);
+        \fwrite($resource, PHP_EOL, \mb_strlen(PHP_EOL));
+        \fwrite($resource, PHP_EOL, \mb_strlen(PHP_EOL));
+        \rewind($resource);
+
+        for ($i=1; $i <= 2; ++$i) {
+            static::assertSame(
+                [],
+                $stream->readCsv(),
+                \sprintf(
+                    '%s::%s() failed to return empty array as result for empty (and last) line.',
+                    \get_class($stream),
+                    'readCsv'
+                )
+            );
+        }
+
+        static::assertSame(
+            [],
+            $this->stream->readCsv(),
+            \sprintf(
+                '%s::%s() failed to return empty array as result for empty and last line.',
+                \get_class($stream),
+                'readCsv'
+            )
+        );
+
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed reading CSV from stream.');
         $this->stream->readCsv();
