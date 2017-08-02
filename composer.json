@@ -24,10 +24,5 @@
     "friendsofphp/php-cs-fixer": "~2.3",
     "psr/http-message": "~1.0",
     "symfony/process": "~3.0 || ~4.0"
-  },
-  "config": {
-    "cache-dir": "dev/cache/composer_cache",
-    "cache-files-maxsize": "50MiB",
-    "cache-files-ttl": 2592000
   }
 }
