@@ -5,12 +5,12 @@ php:
 
 cache:
   directories:
-    - "$HOME/.composer/cache/files"
+    - "dev/cache"
 
 before_install:
   - composer self-update
 
 install:
-  - composer update --prefer-source
+  - composer install --prefer-source
 
 script: vendor/bin/phpunit --coverage-text=php://stdout --colors=never
