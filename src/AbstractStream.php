@@ -65,7 +65,7 @@ abstract class AbstractStream implements StreamInterface
      */
     public function getType(): ?string
     {
-        return $this->getMetadataKey('f');
+        return $this->getMetadataKey('stream_type');
     }
 
     /**
