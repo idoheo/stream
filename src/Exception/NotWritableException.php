@@ -19,11 +19,11 @@ class NotWritableException extends LogicException
 {
     public function __construct(StreamInterface $stream, int $code = 0, Exception $previous = null)
     {
-        $message = $stream->isOpen() ? 'Closed stream is not writable.' : \sprintf(
-            'Stream of "%s" type with mode "%s" is not writable%s.',
+        $message = !$stream->isOpen() ? 'Closed stream is not writable.' : \sprintf(
+            '%s is not writable (type: %s; mode: %s).',
+            null === $stream->getUri() ? 'Stream' : \sprintf('Stream "%s"', $stream->getUri()),
             $stream->getType(),
-            $stream->getMode(),
-            null === $stream->getUri() ? '' : \sprintf(' (URI: %s)', $stream->getUri())
+            $stream->getMode()
         );
 
         parent::__construct($message, $code, $previous);

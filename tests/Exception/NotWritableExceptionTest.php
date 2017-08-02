@@ -27,7 +27,7 @@ class NotWritableExceptionTest extends TestCase
     public function testConstructWithClosedStream()
     {
         $streamMock = $this->getMockForAbstractClass(StreamInterface::class);
-        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(true);
+        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(false);
 
         $this->expectException(NotWritableException::class);
         $this->expectExceptionMessage('Closed stream is not writable.');
@@ -44,7 +44,7 @@ class NotWritableExceptionTest extends TestCase
         $mode = 'some-mode-'.\microtime(true);
 
         $streamMock = $this->getMockForAbstractClass(StreamInterface::class);
-        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(false);
+        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(true);
         $streamMock->expects(static::atLeastOnce())->method('getType')->willReturn($type);
         $streamMock->expects(static::atLeastOnce())->method('getMode')->willReturn($mode);
         $streamMock->expects(static::atLeastOnce())->method('getUri')->willReturn(null);
@@ -52,7 +52,7 @@ class NotWritableExceptionTest extends TestCase
         $this->expectException(NotWritableException::class);
         $this->expectExceptionMessage(
             \sprintf(
-                'Stream of "%s" type with mode "%s" is not writable.',
+                'Stream is not writable (type: %s; mode: %s)',
                 $type,
                 $mode
             )
@@ -71,7 +71,7 @@ class NotWritableExceptionTest extends TestCase
         $uri  = 'some-uri-'.\microtime(true);
 
         $streamMock = $this->getMockForAbstractClass(StreamInterface::class);
-        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(false);
+        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(true);
         $streamMock->expects(static::atLeastOnce())->method('getType')->willReturn($type);
         $streamMock->expects(static::atLeastOnce())->method('getMode')->willReturn($mode);
         $streamMock->expects(static::atLeastOnce())->method('getUri')->willReturn($uri);
@@ -79,10 +79,10 @@ class NotWritableExceptionTest extends TestCase
         $this->expectException(NotWritableException::class);
         $this->expectExceptionMessage(
             \sprintf(
-                'Stream of "%s" type with mode "%s" is not writable (URI: %s).',
+                'Stream "%s" is not writable (type: %s; mode: %s)',
+                $uri,
                 $type,
-                $mode,
-                $uri
+                $mode
             )
         );
 

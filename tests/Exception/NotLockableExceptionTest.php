@@ -27,7 +27,7 @@ class NotLockableExceptionTest extends TestCase
     public function testConstructWithClosedStream()
     {
         $streamMock = $this->getMockForAbstractClass(StreamInterface::class);
-        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(true);
+        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(false);
 
         $this->expectException(NotLockableException::class);
         $this->expectExceptionMessage('Closed stream is not lockable.');
@@ -44,7 +44,7 @@ class NotLockableExceptionTest extends TestCase
         $mode = 'some-mode-'.\microtime(true);
 
         $streamMock = $this->getMockForAbstractClass(StreamInterface::class);
-        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(false);
+        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(true);
         $streamMock->expects(static::atLeastOnce())->method('getType')->willReturn($type);
         $streamMock->expects(static::atLeastOnce())->method('getMode')->willReturn($mode);
         $streamMock->expects(static::atLeastOnce())->method('getUri')->willReturn(null);
@@ -52,7 +52,7 @@ class NotLockableExceptionTest extends TestCase
         $this->expectException(NotLockableException::class);
         $this->expectExceptionMessage(
             \sprintf(
-                'Stream of "%s" type with mode "%s" is not lockable.',
+                'Stream is not lockable (type: %s; mode: %s)',
                 $type,
                 $mode
             )
@@ -71,7 +71,7 @@ class NotLockableExceptionTest extends TestCase
         $uri  = 'some-uri-'.\microtime(true);
 
         $streamMock = $this->getMockForAbstractClass(StreamInterface::class);
-        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(false);
+        $streamMock->expects(static::atLeastOnce())->method('isOpen')->willReturn(true);
         $streamMock->expects(static::atLeastOnce())->method('getType')->willReturn($type);
         $streamMock->expects(static::atLeastOnce())->method('getMode')->willReturn($mode);
         $streamMock->expects(static::atLeastOnce())->method('getUri')->willReturn($uri);
@@ -79,10 +79,10 @@ class NotLockableExceptionTest extends TestCase
         $this->expectException(NotLockableException::class);
         $this->expectExceptionMessage(
             \sprintf(
-                'Stream of "%s" type with mode "%s" is not lockable (URI: %s).',
+                'Stream "%s" is not lockable (type: %s; mode: %s)',
+                $uri,
                 $type,
-                $mode,
-                $uri
+                $mode
             )
         );
 
