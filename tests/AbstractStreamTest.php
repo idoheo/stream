@@ -692,9 +692,9 @@ class AbstractStreamTest extends TestCase
         $position = \random_int(10, 20);
         $string   = \implode(\array_fill(0, $position, 'x')).\microtime();
 
-        $meta = array(
-            'seekable' => true
-        );
+        $meta = [
+            'seekable' => true,
+        ];
         $this->abstractStream->expects(static::at(0))->method('getMetadata')->willReturn($meta);
         $this->abstractStream->expects(static::at(1))->method('tell')->willReturn($position);
         $this->abstractStream->expects(static::at(2))->method('seek')->with(0, SEEK_SET)->willReturn($this->abstractStream);
@@ -734,9 +734,9 @@ class AbstractStreamTest extends TestCase
         $position = \random_int(10, 20);
         $string   = \implode(\array_fill(0, $position, 'x')).\microtime();
 
-        $meta = array(
-            'seekable' => false
-        );
+        $meta = [
+            'seekable' => false,
+        ];
         $this->abstractStream->expects(static::at(0))->method('getMetadata')->willReturn($meta);
         $this->abstractStream->expects(static::at(1))->method('getContents')->willReturn($string);
 
@@ -759,13 +759,13 @@ class AbstractStreamTest extends TestCase
         $position = \random_int(10, 20);
         $string   = \implode(\array_fill(0, $position, 'x')).\microtime();
 
-        $meta = array(
-            'seekable' => true
-        );
+        $meta = [
+            'seekable' => true,
+        ];
         $this->abstractStream->expects(static::at(0))->method('getMetadata')->willReturn($meta);
         $this->abstractStream->expects(static::at(1))->method('tell')->willReturn($position);
         $this->abstractStream->expects(static::at(2))->method('seek')->with(0, SEEK_SET)->willReturn($this->abstractStream);
-        $this->abstractStream->expects(static::at(3))->method('getContents')->willThrowException(new \Exception);
+        $this->abstractStream->expects(static::at(3))->method('getContents')->willThrowException(new \Exception());
 
         static::assertSame(
             '',
