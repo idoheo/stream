@@ -196,6 +196,47 @@ class AbstractStreamTest extends TestCase
     }
 
     /**
+     * @covers ::getType
+     * @depends testGetMetadataKey
+     */
+    public function testGetType()
+    {
+        $stream_type = 'stream_type-'.\time();
+
+        $this->abstractStream
+            ->expects(static::at(0))
+            ->method('getMetadata')
+            ->willReturn(['stream_type' => $stream_type]);
+
+        static::assertSame(
+            $stream_type,
+            $this->abstractStream->getType(),
+            \sprintf(
+                '%s::%s() failed to return value provided in metadata key %s.',
+                $this->abstractStreamClass,
+                'getType',
+                'uri'
+            )
+        );
+
+        foreach ([[]] as $metaData) {
+            $this->abstractStream
+                ->expects(static::at(0))
+                ->method('getMetadata')
+                ->willReturn($metaData);
+
+            static::assertNull(
+                $this->abstractStream->getType(),
+                \sprintf(
+                    '%s::%s() failed to return NULL when value is not provided in metadata.',
+                    $this->abstractStreamClass,
+                    'getType'
+                )
+            );
+        }
+    }
+
+    /**
      * @covers ::isBlocking
      * @depends testGetMetadataKey
      */

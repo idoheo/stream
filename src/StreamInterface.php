@@ -109,9 +109,16 @@ interface StreamInterface
     /**
      * Returns stream URI.
      *
-     * @return string|null Stream URI, NULL if stream is closed
+     * @return string|null Stream URI, NULL if not available
      */
     public function getUri(): ?string;
+
+    /**
+     * Returns stream type.
+     *
+     * @return string|null Stream type, NULL if stream is closed
+     */
+    public function getType(): ?string;
 
     /**
      * Checks if stream supports locking.
