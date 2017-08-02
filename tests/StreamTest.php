@@ -133,7 +133,6 @@ class StreamTest extends TestCase
      * @covers ::close
      * @depends testConstruct
      * @depends testIsOpen
-     * @runInSeparateProcess
      */
     public function testClose()
     {
@@ -343,7 +342,6 @@ class StreamTest extends TestCase
      * @covers ::lock
      * @depends testConstruct
      * @depends testIsLockable
-     * @runInSeparateProcess
      */
     public function testLock()
     {
@@ -935,6 +933,7 @@ class StreamTest extends TestCase
     /**
      * @covers ::isLocal
      * @depends testConstruct
+     * @runInSeparateProcess
      */
     public function testIsLocal__success()
     {
@@ -2004,7 +2003,6 @@ class StreamTest extends TestCase
     /**
      * @covers ::output
      * @depends testConstruct
-     * @runInSeparateProcess
      */
     public function testOutput__success()
     {
