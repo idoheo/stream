@@ -26,9 +26,6 @@ use RuntimeException;
  */
 interface StreamInterface
 {
-    public const LOCKING_WOULD_BLOCK     = 1;
-    public const LOCKING_WOULD_NOT_BLOCK = -1;
-
     /**
      * Checks if stream is still open.
      *
@@ -130,60 +127,52 @@ interface StreamInterface
      * code is set to static::LOCKING_WOULD_BLOCK, else it is set to
      * LOCKING_WOULD_NOT_BLOCK.
      *
-     * @param int $lock Lock flag (LOCK_* constants)
+     * @param int  $lock       Lock flag (LOCK_* constants)
+     * @param bool $wouldBlock if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
      * @throws LogicException   if called on non-open stream
      * @throws RuntimeException on failure
      */
-    public function lock(int $lock): void;
+    public function lock(int $lock, &$wouldBlock = null): void;
 
     /**
      * Preform file locking operation for reading.
      *
      * Locks using LOCK_SH flag
      *
-     * If Runtime exception is thrown, if operation would block then exception
-     * code is set to static::LOCKING_WOULD_BLOCK, else it is set to
-     * LOCKING_WOULD_NOT_BLOCK.
-     *
      * @param bool $nonBlocking TRUE if lock operation should not block, FALSE otherwise (default: FALSE)
+     * @param bool $wouldBlock  if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
      * @throws LogicException   if called on non-open stream
      * @throws RuntimeException on failure
      */
-    public function lockExclusive(bool $nonBlocking = false): void;
+    public function lockExclusive(bool $nonBlocking = false, &$wouldBlock = null): void;
 
     /**
      * Preform file locking operation for writing.
      *
      * Locks using LOCK_EX flag
      *
-     * If Runtime exception is thrown, if operation would block then exception
-     * code is set to static::LOCKING_WOULD_BLOCK, else it is set to
-     * LOCKING_WOULD_NOT_BLOCK.
-     *
      * @param bool $nonBlocking TRUE if lock operation should not block, FALSE otherwise (default: FALSE)
+     * @param bool $wouldBlock  if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
      * @throws LogicException   if called on non-open stream
      * @throws RuntimeException on failure
      */
-    public function lockShared(bool $nonBlocking = false): void;
+    public function lockShared(bool $nonBlocking = false, &$wouldBlock = null): void;
 
     /**
      * Preform file locking operation (unlocking).
      *
      * Locks using LOCK_UN flag
      *
-     * If Runtime exception is thrown, if operation would block then exception
-     * code is set to static::LOCKING_WOULD_BLOCK, else it is set to
-     * LOCKING_WOULD_NOT_BLOCK.
-     *
      * @param bool $nonBlocking TRUE if lock operation should not block, FALSE otherwise (default: FALSE)
+     * @param bool $wouldBlock  if passed, will be set to TRUE if operation would block, FALSE otherwise
      *
      * @throws LogicException   if called on non-open stream
      * @throws RuntimeException on failure
      */
-    public function unlock(bool $nonBlocking = false): void;
+    public function unlock(bool $nonBlocking = false, &$wouldBlock = null): void;
 
     /**
      * Returns whether or not the stream is seekable.
@@ -414,6 +403,32 @@ interface StreamInterface
      * @return string
      */
     public function getContents(): string;
+
+    /**
+     * Copies contents of current stream to another stream.
+     *
+     * Note that copy will start from current streams pointer, and at target
+     * streams pointer. Adjust (move) pointers if needed.
+     *
+     * <code>
+     *   // Copying full content of source stream to the end of target stream
+     *
+     *   $sourceStream->rewind();                    // Position source
+     *   $targetStream->fastForward();               // Position target
+     *   $sourceStream->copyToStream($targetStream); // Copy
+     * </code>
+     *
+     * @param StreamInterface $targetStream Target stream to copy to
+     * @param int|null        $maxLength    Maximum bytes to copy
+     * @param int             $chunkSize    Chunk size for read->write operations
+     *
+     * @throws LogicException   if source is not readable or target writable
+     * @throws DomainException  if $chunkSize is 0 or less
+     * @throws RuntimeException on failure
+     *
+     * @return int Total number of bytes copied
+     */
+    public function copyToStream(StreamInterface $targetStream, int $maxLength = null, int $chunkSize = 1024): int;
 
     /**
      * Output all remaining data in the stream.

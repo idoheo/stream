@@ -229,12 +229,31 @@ class AbstractStreamTest extends TestCase
     public function testLockShared()
     {
         foreach ([true, false] as $nonBlocking) {
-            $this->abstractStream
-                ->expects(static::at(0))
-                ->method('lock')
-                ->with(LOCK_SH | ($nonBlocking ? LOCK_NB : 0));
+            foreach ([true, false] as $wouldBlock) {
+                $wbResult = null;
 
-            $this->abstractStream->lockShared($nonBlocking);
+                $this->abstractStream
+                    ->expects(static::at(0))
+                    ->method('lock')
+                    ->with(LOCK_SH | ($nonBlocking ? LOCK_NB : 0), $wbResult)
+                    ->willReturnCallback(
+                        function ($lock, &$wb) use ($wouldBlock) {
+                            $wb = $wouldBlock;
+                        }
+                    );
+
+                $this->abstractStream->lockShared($nonBlocking, $wbResult);
+
+                static::assertSame(
+                    $wouldBlock,
+                    $wbResult,
+                    \sprintf(
+                        '%s::%s() failed to update $wouldBlock passed as second argument.',
+                        AbstractStream::class,
+                        'lockShared'
+                    )
+                );
+            }
         }
 
         $this->abstractStream
@@ -251,12 +270,31 @@ class AbstractStreamTest extends TestCase
     public function testLockExclusive()
     {
         foreach ([true, false] as $nonBlocking) {
-            $this->abstractStream
-                ->expects(static::at(0))
-                ->method('lock')
-                ->with(LOCK_EX | ($nonBlocking ? LOCK_NB : 0));
+            foreach ([true, false] as $wouldBlock) {
+                $wbResult = null;
 
-            $this->abstractStream->lockExclusive($nonBlocking);
+                $this->abstractStream
+                    ->expects(static::at(0))
+                    ->method('lock')
+                    ->with(LOCK_EX | ($nonBlocking ? LOCK_NB : 0), $wbResult)
+                    ->willReturnCallback(
+                        function ($lock, &$wb) use ($wouldBlock) {
+                            $wb = $wouldBlock;
+                        }
+                    );
+
+                $this->abstractStream->lockExclusive($nonBlocking, $wbResult);
+
+                static::assertSame(
+                    $wouldBlock,
+                    $wbResult,
+                    \sprintf(
+                        '%s::%s() failed to update $wouldBlock passed as second argument.',
+                        AbstractStream::class,
+                        'lockShared'
+                    )
+                );
+            }
         }
 
         $this->abstractStream
@@ -273,12 +311,31 @@ class AbstractStreamTest extends TestCase
     public function testUnlock()
     {
         foreach ([true, false] as $nonBlocking) {
-            $this->abstractStream
-                ->expects(static::at(0))
-                ->method('lock')
-                ->with(LOCK_UN | ($nonBlocking ? LOCK_NB : 0));
+            foreach ([true, false] as $wouldBlock) {
+                $wbResult = null;
 
-            $this->abstractStream->unlock($nonBlocking);
+                $this->abstractStream
+                    ->expects(static::at(0))
+                    ->method('lock')
+                    ->with(LOCK_UN | ($nonBlocking ? LOCK_NB : 0), $wbResult)
+                    ->willReturnCallback(
+                        function ($lock, &$wb) use ($wouldBlock) {
+                            $wb = $wouldBlock;
+                        }
+                    );
+
+                $this->abstractStream->unlock($nonBlocking, $wbResult);
+
+                static::assertSame(
+                    $wouldBlock,
+                    $wbResult,
+                    \sprintf(
+                        '%s::%s() failed to update $wouldBlock passed as second argument.',
+                        AbstractStream::class,
+                        'lockShared'
+                    )
+                );
+            }
         }
 
         $this->abstractStream

@@ -71,25 +71,25 @@ abstract class AbstractStream implements StreamInterface
     /**
      * {@inheritdoc}
      */
-    public function lockExclusive(bool $nonBlocking = false): void
+    public function lockExclusive(bool $nonBlocking = false, &$wouldBlock = null): void
     {
-        $this->lock(LOCK_EX | ($nonBlocking ? LOCK_NB : 0));
+        $this->lock(LOCK_EX | ($nonBlocking ? LOCK_NB : 0), $wouldBlock);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function lockShared(bool $nonBlocking = false): void
+    public function lockShared(bool $nonBlocking = false, &$wouldBlock = null): void
     {
-        $this->lock(LOCK_SH | ($nonBlocking ? LOCK_NB : 0));
+        $this->lock(LOCK_SH | ($nonBlocking ? LOCK_NB : 0), $wouldBlock);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function unlock(bool $nonBlocking = false): void
+    public function unlock(bool $nonBlocking = false, &$wouldBlock = null): void
     {
-        $this->lock(LOCK_UN | ($nonBlocking ? LOCK_NB : 0));
+        $this->lock(LOCK_UN | ($nonBlocking ? LOCK_NB : 0), $wouldBlock);
     }
 
     /**

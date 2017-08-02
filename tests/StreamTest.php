@@ -373,7 +373,8 @@ class StreamTest extends TestCase
         \flock($newResource, LOCK_EX | LOCK_NB);
 
         try {
-            $this->stream->lock(LOCK_EX | LOCK_NB);
+            $wouldBlock = null;
+            $this->stream->lock(LOCK_EX | LOCK_NB, $wouldBlock);
             $this->fail('Expected locking exception.');
         } catch (RuntimeException $e) {
             static::assertSame(
@@ -382,11 +383,11 @@ class StreamTest extends TestCase
                         'Failed performing lock operation (%d).',
                         LOCK_EX | LOCK_NB
                     ),
-                    'code' => StreamInterface::LOCKING_WOULD_BLOCK,
+                    'would_block' => true,
                 ],
                 [
-                    'message' => $e->getMessage(),
-                    'code'    => $e->getCode(),
+                    'message'     => $e->getMessage(),
+                    'would_block' => $wouldBlock,
                 ],
                 \sprintf(
                     '%s::%s() failed to produce expected error on failed locking.',
@@ -399,7 +400,7 @@ class StreamTest extends TestCase
         \fclose($this->resource);
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Stream is not lockable.');
-        $this->stream->lock(LOCK_UN | LOCK_NB, true);
+        $this->stream->lock(LOCK_UN | LOCK_NB);
     }
 
     /**
@@ -1663,6 +1664,309 @@ class StreamTest extends TestCase
         );
 
         $this->stream->readCsv(0, $delimiterChar, $enclosureChar, $escapeChar);
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__success__directStreamAccess__default()
+    {
+        $class     = \get_class($this->stream);
+        $newTmp    = \tmpfile();
+        $newStream = new $class($newTmp);
+
+        \fwrite($this->resource, \file_get_contents(__DIR__.'/lorem_ipsum.txt'));
+        \fseek($this->resource, 461);
+        $expected = \stream_get_contents($this->resource);
+        \fseek($this->resource, 461);
+
+        //stream_copy_to_stream($this->resource, $newTmp);
+        static::assertSame(
+            \mb_strlen($expected),
+            $this->stream->copyToStream($newStream),
+            'Expected number of bytes copied to be returned.'
+        );
+
+        \rewind($newTmp);
+
+        static::assertSame(
+            $expected,
+            \stream_get_contents($newTmp),
+            'Failed copying stream data (using support to direct stream access).'
+        );
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__success__directStreamAccess__withMaxLength()
+    {
+        $class     = \get_class($this->stream);
+        $newTmp    = \tmpfile();
+        $newStream = new $class($newTmp);
+
+        \fwrite($this->resource, \file_get_contents(__DIR__.'/lorem_ipsum.txt'));
+        \fseek($this->resource, 393);
+        $expected = \fread($this->resource, 67);
+        \fseek($this->resource, 393);
+
+        //stream_copy_to_stream($this->resource, $newTmp);
+        static::assertSame(
+            \mb_strlen($expected),
+            $this->stream->copyToStream($newStream, 67),
+            'Expected number of bytes copied to be returned.'
+        );
+
+        \rewind($newTmp);
+
+        static::assertSame(
+            $expected,
+            \stream_get_contents($newTmp),
+            'Failed copying stream data (using support to direct stream access).'
+        );
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__failure__directStreamAccess__failOperation()
+    {
+        $class = \get_class($this->stream);
+        $res   = \tmpfile();
+        $mock  = $this
+            ->getMockBuilder($class)
+            ->setConstructorArgs([$res])
+            ->setMethods(['isWritable'])
+            ->getMock();
+        \fclose($res);
+        $mock->expects(static::any())->method('isWritable')->willReturn(true);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed copying stream content to another stream.');
+
+        $this->stream->copyToStream($mock);
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__success__streamMethodsAccess__default()
+    {
+        $newTmp    = \tmpfile();
+        $newStream = $this->getMockForAbstractClass(StreamInterface::class);
+
+        $newStream
+            ->expects(static::any())
+            ->method('isWritable')
+            ->willReturn(true);
+
+        $newStream
+            ->expects(static::any())
+            ->method('eof')
+            ->willReturnCallback(
+                function () use (&$newTmp) {
+                    return \feof($newTmp);
+                }
+            );
+
+        $newStream
+            ->expects(static::any())
+            ->method('write')
+            ->with(static::isType('string'))
+            ->willReturnCallback(
+                function (string $string) use (&$newTmp) {
+                    return \fwrite($newTmp, $string);
+                }
+            );
+        \fwrite($this->resource, \file_get_contents(__DIR__.'/lorem_ipsum.txt'));
+        \fseek($this->resource, 461);
+        $expected = \stream_get_contents($this->resource);
+        \fseek($this->resource, 461);
+
+        //stream_copy_to_stream($this->resource, $newTmp);
+        static::assertSame(
+            \mb_strlen($expected),
+            $this->stream->copyToStream($newStream),
+            'Expected number of bytes copied to be returned.'
+        );
+
+        \rewind($newTmp);
+
+        static::assertSame(
+            $expected,
+            \stream_get_contents($newTmp),
+            'Failed copying stream data (using support to direct stream access).'
+        );
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__success__streamMethodsAccess__withMaxLength()
+    {
+        $newTmp    = \tmpfile();
+        $newStream = $this->getMockForAbstractClass(StreamInterface::class);
+
+        $newStream
+            ->expects(static::any())
+            ->method('isWritable')
+            ->willReturn(true);
+
+        $newStream
+            ->expects(static::any())
+            ->method('eof')
+            ->willReturnCallback(
+                function () use (&$newTmp) {
+                    return \feof($newTmp);
+                }
+            );
+
+        $newStream
+            ->expects(static::any())
+            ->method('write')
+            ->with(static::isType('string'))
+            ->willReturnCallback(
+                function (string $string) use (&$newTmp) {
+                    return \fwrite($newTmp, $string);
+                }
+            );
+
+        \fwrite($this->resource, \file_get_contents(__DIR__.'/lorem_ipsum.txt'));
+        \fseek($this->resource, 393);
+        $expected = \fread($this->resource, 67);
+        \fseek($this->resource, 393);
+
+        //stream_copy_to_stream($this->resource, $newTmp);
+        static::assertSame(
+            \mb_strlen($expected),
+            $this->stream->copyToStream($newStream, 67, 30),
+            'Expected number of bytes copied to be returned.'
+        );
+
+        \rewind($newTmp);
+
+        static::assertSame(
+            $expected,
+            \stream_get_contents($newTmp),
+            'Failed copying stream data (using support to direct stream access).'
+        );
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__failure__streamMethodsAccess()
+    {
+        $exception = new \Exception('Exception message - '.\microtime(true), \random_int(100, 999));
+
+        $newTmp    = \tmpfile();
+        $newStream = $this->getMockForAbstractClass(StreamInterface::class);
+
+        $newStream
+            ->expects(static::any())
+            ->method('isWritable')
+            ->willReturn(true);
+
+        $newStream
+            ->expects(static::any())
+            ->method('eof')
+            ->willReturnCallback(
+                function () use (&$newTmp) {
+                    return \feof($newTmp);
+                }
+            );
+
+        $newStream
+            ->expects(static::any())
+            ->method('write')
+            ->with(static::isType('string'))
+            ->willThrowException($exception);
+
+        try {
+            $this->stream->copyToStream($newStream);
+            $this->fail('Expected exception to be caught.');
+        } catch (\Exception $e) {
+            static::assertSame(
+                [
+                    'message'  => \sprintf('Failed copying stream content to another stream: %s', $exception->getMessage()),
+                    'code'     => $exception->getCode(),
+                    'previous' => $exception,
+                ],
+                [
+                    'message'  => $e->getMessage(),
+                    'code'     => $e->getCode(),
+                    'previous' => $e->getPrevious(),
+                ],
+                'Unexpected exception thrown'
+            );
+        }
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(\sprintf('Failed copying stream content to another stream: %s', $exception->getMessage()));
+        $this->expectExceptionCode($exception->getCode());
+
+        throw $e;
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__failure__sourceNotReadable()
+    {
+        $class = \get_class($this->stream);
+        $mock  = $this
+            ->getMockBuilder($class)
+            ->setConstructorArgs([$this->resource])
+            ->setMethods(['isReadable'])
+            ->getMock();
+        \fclose($this->resource);
+        $mock->expects(static::any())->method('isReadable')->willReturn(false);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Source stream is not readable.');
+
+        $mock->copyToStream($this->stream);
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__failure__targetNotWritable()
+    {
+        $class = \get_class($this->stream);
+        $mock  = $this
+            ->getMockBuilder($class)
+            ->setConstructorArgs([\tmpfile()])
+            ->setMethods(['isWritable'])
+            ->getMock();
+        $mock->expects(static::any())->method('isWritable')->willReturn(false);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Target stream is not writable.');
+
+        $this->stream->copyToStream($mock);
+    }
+
+    /**
+     * @covers ::copyToStream
+     * @depends testConstruct
+     */
+    public function testCopyToStream__failure__chunkSizeToSmall()
+    {
+        $target = new Stream(\tmpfile());
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Chunk size for stream copy can not be less then 1.');
+
+        $this->stream->copyToStream($target, -1, 0);
     }
 
     /**

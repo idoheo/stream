@@ -127,7 +127,7 @@ class Stream extends AbstractStream
     /**
      * {@inheritdoc}
      */
-    public function lock(int $lock): void
+    public function lock(int $lock, &$wouldBlock = null): void
     {
         if (!$this->isLockable()) {
             throw new LogicException(
@@ -135,13 +135,16 @@ class Stream extends AbstractStream
             );
         }
 
-        if (!\flock($this->stream, $lock, $wouldBlock)) {
+        $success = \flock($this->stream, $lock, $wouldBlock);
+
+        $wouldBlock = \filter_var($wouldBlock, FILTER_VALIDATE_BOOLEAN, ['flags' => FILTER_NULL_ON_FAILURE]);
+
+        if (!$success) {
             throw new RuntimeException(
                 \sprintf(
                     'Failed performing lock operation (%d).',
                     $lock
-                ),
-                $wouldBlock ? static::LOCKING_WOULD_BLOCK : static::LOCKING_WOULD_NOT_BLOCK
+                )
             );
         }
     }
@@ -473,6 +476,56 @@ class Stream extends AbstractStream
         }
 
         return $read;
+    }
+
+    public function copyToStream(StreamInterface $targetStream, int $maxLength = null, int $chunkSize = 1024): int
+    {
+        if (!$this->isReadable()) {
+            throw new LogicException(
+                'Source stream is not readable.'
+            );
+        }
+
+        if (!$targetStream->isWritable()) {
+            throw new LogicException(
+                'Target stream is not writable.'
+            );
+        }
+
+        if ($chunkSize < 1) {
+            throw new DomainException(
+                'Chunk size for stream copy can not be less then 1.'
+            );
+        }
+
+        // If stream is of a same class, utilize direct access to stream property
+        if ($targetStream instanceof self) {
+            if (false === $res = @\stream_copy_to_stream($this->stream, $targetStream->stream, null === $maxLength ? -1 : $maxLength)) {
+                throw new RuntimeException('Failed copying stream content to another stream.');
+            }
+
+            return $res;
+        }
+
+        $copied = 0;
+
+        try {
+            while (!$this->eof() && (null === $maxLength || $copied < $maxLength)) {
+                $readSize = null === $maxLength ? $chunkSize : \min($chunkSize, $maxLength - $copied);
+                $copied += $targetStream->write($this->read($readSize));
+            }
+        } catch (\Throwable $e) {
+            throw new RuntimeException(
+                \sprintf(
+                    'Failed copying stream content to another stream: %s',
+                    $e->getMessage()
+                ),
+                $e->getCode(),
+                $e
+            );
+        }
+
+        return $copied;
     }
 
     /**
