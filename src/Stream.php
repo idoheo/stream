@@ -59,9 +59,7 @@ class Stream extends AbstractStream
      */
     public function isOpen(): bool
     {
-        $metadata = \is_resource($this->stream) ? @\stream_get_meta_data($this->stream) : null;
-
-        return \is_array($metadata) && \array_key_exists('stream_type', $metadata);
+        return \is_resource($this->stream) && (\strcasecmp(\get_resource_type($this->stream), 'Unknown') !== 0);
     }
 
     /**
@@ -288,6 +286,9 @@ class Stream extends AbstractStream
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isLocal(): bool
     {
         return $this->isOpen() && @\stream_is_local($this->stream);

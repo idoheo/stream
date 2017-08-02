@@ -224,6 +224,39 @@ class AbstractStreamTest extends TestCase
     }
 
     /**
+     * @covers ::isRemote
+     */
+    public function testIsRemote__success()
+    {
+        foreach ([true, false] as $open) {
+            foreach ([true, false] as $local) {
+                $this->abstractStream = $this
+                    ->getMockBuilder($this->abstractStreamClass)
+                    ->disableOriginalConstructor()
+                    ->getMockForAbstractClass();
+
+                $remote = $open && !$local;
+
+                $this->abstractStream->expects(static::any())->method('isOpen')->wilLReturn($open);
+                $this->abstractStream->expects(static::any())->method('isLocal')->wilLReturn($local);
+
+                static::assertSame(
+                    $remote,
+                    $this->abstractStream->isRemote(),
+                    \sprintf(
+                        '%s::%s() expected to return %s for %s %s stream.',
+                        $this->abstractStreamClass,
+                        'isRemote',
+                        \var_export($remote, true),
+                        $open ? 'open' : 'closed',
+                        $local ? 'local' : 'non-local'
+                    )
+                );
+            }
+        }
+    }
+
+    /**
      * @covers ::lockShared
      */
     public function testLockShared()

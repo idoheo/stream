@@ -320,9 +320,22 @@ interface StreamInterface
     /**
      * Checks if stream is local.
      *
-     * @return bool
+     * Note that this returns false if stream is not open.
+     * To check that stream is remote use ::isRemote() method.
+     *
+     * @return bool TRUE if stream is local, FALSE otherwise
      */
     public function isLocal(): bool;
+
+    /**
+     * Checks if stream is remote.
+     *
+     * Note that this returns false if stream is not open.
+     * To check that stream is local use ::isLocal() method.
+     *
+     * @return bool TRUE if stream is remote, FALSE otherwise
+     */
+    public function isRemote(): bool;
 
     /**
      * Returns the current position of the file read/write pointer.
@@ -349,7 +362,7 @@ interface StreamInterface
      * @param int $length the size to truncate to
      *
      * @throws DomainException  if $length is less then 0
-     * @throws LogicException   if stream is nto writable
+     * @throws LogicException   if stream is not writable
      * @throws RuntimeException on failure
      */
     public function truncate(int $length): void;

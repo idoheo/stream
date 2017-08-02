@@ -71,6 +71,14 @@ abstract class AbstractStream implements StreamInterface
     /**
      * {@inheritdoc}
      */
+    public function isRemote(): bool
+    {
+        return $this->isOpen() && !$this->isLocal();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function lockExclusive(bool $nonBlocking = false, &$wouldBlock = null): void
     {
         $this->lock(LOCK_EX | ($nonBlocking ? LOCK_NB : 0), $wouldBlock);
