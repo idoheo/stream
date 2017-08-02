@@ -174,10 +174,14 @@ abstract class AbstractStream implements StreamInterface
     public function __toString(): string
     {
         try {
-            $position = $this->tell();
-            $this->seek(0, SEEK_SET);
-            $data = $this->getContents();
-            $this->seek($position, SEEK_SET);
+            if ($this->isSeekable()) {
+                $position = $this->tell();
+                $this->seek(0, SEEK_SET);
+                $data = $this->getContents();
+                $this->seek($position, SEEK_SET);
+            } else {
+                $data = $this->getContents();
+            }
         } catch (\Exception $e) {
             return '';
         }

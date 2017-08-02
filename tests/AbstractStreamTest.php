@@ -687,15 +687,19 @@ class AbstractStreamTest extends TestCase
     /**
      * @covers ::__toString
      */
-    public function testToString()
+    public function testToString__success__seekable()
     {
         $position = \random_int(10, 20);
         $string   = \implode(\array_fill(0, $position, 'x')).\microtime();
 
-        $this->abstractStream->expects(static::at(0))->method('tell')->willReturn($position);
-        $this->abstractStream->expects(static::at(1))->method('seek')->with(0, SEEK_SET)->willReturn($this->abstractStream);
-        $this->abstractStream->expects(static::at(2))->method('getContents')->willReturn($string);
-        $this->abstractStream->expects(static::at(3))->method('seek')->with($position, SEEK_SET)->willReturn($this->abstractStream);
+        $meta = array(
+            'seekable' => true
+        );
+        $this->abstractStream->expects(static::at(0))->method('getMetadata')->willReturn($meta);
+        $this->abstractStream->expects(static::at(1))->method('tell')->willReturn($position);
+        $this->abstractStream->expects(static::at(2))->method('seek')->with(0, SEEK_SET)->willReturn($this->abstractStream);
+        $this->abstractStream->expects(static::at(3))->method('getContents')->willReturn($string);
+        $this->abstractStream->expects(static::at(4))->method('seek')->with($position, SEEK_SET)->willReturn($this->abstractStream);
 
         static::assertSame(
             $string,
@@ -707,8 +711,62 @@ class AbstractStreamTest extends TestCase
             )
         );
 
+        return;
+
         $this->abstractStream->expects(static::at(0))->method('tell')->willReturn($position);
         $this->abstractStream->expects(static::at(1))->method('seek')->with(0, SEEK_SET)->willThrowException(new \Exception());
+        static::assertSame(
+            '',
+            (string) $this->abstractStream,
+            \sprintf(
+                '%s::%s() failed to return expected value when failed to get string.',
+                $this->abstractStreamClass,
+                '__toString'
+            )
+        );
+    }
+
+    /**
+     * @covers ::__toString
+     */
+    public function testToString__success__nonSeekable()
+    {
+        $position = \random_int(10, 20);
+        $string   = \implode(\array_fill(0, $position, 'x')).\microtime();
+
+        $meta = array(
+            'seekable' => false
+        );
+        $this->abstractStream->expects(static::at(0))->method('getMetadata')->willReturn($meta);
+        $this->abstractStream->expects(static::at(1))->method('getContents')->willReturn($string);
+
+        static::assertSame(
+            $string,
+            (string) $this->abstractStream,
+            \sprintf(
+                '%s::%s() failed to return expected value.',
+                $this->abstractStreamClass,
+                '__toString'
+            )
+        );
+    }
+
+    /**
+     * @covers ::__toString
+     */
+    public function testToString__failure()
+    {
+        $position = \random_int(10, 20);
+        $string   = \implode(\array_fill(0, $position, 'x')).\microtime();
+
+        $meta = array(
+            'seekable' => true
+        );
+        $this->abstractStream->expects(static::at(0))->method('getMetadata')->willReturn($meta);
+        $this->abstractStream->expects(static::at(1))->method('tell')->willReturn($position);
+        $this->abstractStream->expects(static::at(2))->method('seek')->with(0, SEEK_SET)->willReturn($this->abstractStream);
+        $this->abstractStream->expects(static::at(3))->method('getContents')->willThrowException(new \Exception);
+
         static::assertSame(
             '',
             (string) $this->abstractStream,
