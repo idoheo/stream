@@ -262,7 +262,12 @@ class Stream extends AbstractStream
             );
         }
 
-        if (false === $read = $length === 0 ? @\fgets($this->stream) : @\stream_get_line($this->stream, $length)) {
+        $wasEof = $this->eof();
+        if (false === $read = $length === 0 ? @\fgets($this->stream) : @\fgets($this->stream, $length + 1)) {
+            // If was not at EOF but failed to read, there was an empty line before end.
+            if (!$wasEof && $this->eof()) {
+                return '';
+            }
             throw new RuntimeException(
                 \sprintf(
                     'Failed reading line from stream. Requested length: %d.',

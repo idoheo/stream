@@ -758,7 +758,7 @@ class StreamTest extends TestCase
         foreach ($strings as $string) {
             \fwrite($this->resource, $string);
         }
-        \fwrite($this->resource, "\n");
+        \fwrite($this->resource, PHP_EOL);
         foreach ($newLineStrings as $string) {
             \fwrite($this->resource, $string);
         }
@@ -780,7 +780,7 @@ class StreamTest extends TestCase
         \rewind($this->resource);
 
         static::assertSame(
-            \implode('', $strings)."\n",
+            \implode('', $strings).PHP_EOL,
             $this->stream->readLine(),
             \sprintf(
                 '%s::%s() failed to return expected value.',
@@ -794,6 +794,47 @@ class StreamTest extends TestCase
             $this->stream->readLine(),
             \sprintf(
                 '%s::%s() failed to return expected value.',
+                \get_class($this->stream),
+                'readLine'
+            )
+        );
+
+        $read = [];
+        $this->stream->rewind();
+        while (!$this->stream->eof()) {
+            $read[] = $this->stream->readLine();
+        }
+
+        static::assertSame(
+            [
+                \implode('', $strings)."\n",
+                \implode('', $newLineStrings),
+            ],
+            $read,
+            \sprintf(
+                '%s::%s() failed to return expected results when last line has content.',
+                \get_class($this->stream),
+                'readLine'
+            )
+        );
+
+        $read = [];
+        $this->stream->fastForward();
+        $this->stream->write(PHP_EOL);
+        $this->stream->rewind();
+        while (!$this->stream->eof()) {
+            $read[] = $this->stream->readLine();
+        }
+
+        static::assertSame(
+            [
+                \implode('', $strings).PHP_EOL,
+                \implode('', $newLineStrings).PHP_EOL,
+                '',
+            ],
+            $read,
+            \sprintf(
+                '%s::%s() failed to return expected results when last line has no content.',
                 \get_class($this->stream),
                 'readLine'
             )
