@@ -42,6 +42,8 @@ interface StreamInterface
     /**
      * Closes the stream and any underlying resources.
      * Also, if the stream was locked, it should get unlocked.
+     *
+     * @see http://php.net/manual/en/function.fclose.php
      */
     public function close(): void;
 
@@ -72,6 +74,8 @@ interface StreamInterface
      * @param string $key Key to return
      *
      * @return mixed|null Value from metadata key, or NULL if metadata key does not exist
+     *
+     * @see http://php.net/manual/en/function.stream-get-meta-data.php
      */
     public function getMetadataKey(string $key);
 
@@ -93,13 +97,17 @@ interface StreamInterface
      * @param string $key Key to return
      *
      * @return mixed|null Value from stat key, or NULL if stat key does not exist
+     *
+     * @see http://php.net/manual/en/function.fstat.php
      */
     public function getStatKey(string $key);
 
     /**
      * Checks if stream is at the end of stream.
      *
-     * @return bool|null TRUE if stream is at the end of stream, FALSE if not, NULL if stream is closed
+     * @return bool|null TRUE if stream is at the end of stream or closed, FALSE if not
+     *
+     * @see http://php.net/manual/en/function.fstat.php
      */
     public function eof(): bool;
 
@@ -143,6 +151,8 @@ interface StreamInterface
      *
      * @throws NotLockableException if called on non-lockable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.flock.php
      */
     public function lock(int $lock, &$wouldBlock = null): void;
 
@@ -156,6 +166,8 @@ interface StreamInterface
      *
      * @throws NotLockableException if called on non-lockable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.flock.php
      */
     public function lockExclusive(bool $nonBlocking = false, &$wouldBlock = null): void;
 
@@ -169,6 +181,8 @@ interface StreamInterface
      *
      * @throws NotLockableException if called on non-lockable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.flock.php
      */
     public function lockShared(bool $nonBlocking = false, &$wouldBlock = null): void;
 
@@ -182,6 +196,8 @@ interface StreamInterface
      *
      * @throws NotLockableException if called on non-lockable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.flock.php
      */
     public function unlock(bool $nonBlocking = false, &$wouldBlock = null): void;
 
@@ -207,6 +223,8 @@ interface StreamInterface
      * @throws DomainException      if $whence is not one of SEEK_* constants
      * @throws NotSeekableException if called on non-seekable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.fseek.php
      */
     public function seek(int $offset, int $whence = SEEK_SET): void;
 
@@ -221,6 +239,8 @@ interface StreamInterface
      *
      * @throws NotSeekableException if called on non-seekable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.fseek.php
      */
     public function rewind(): void;
 
@@ -235,6 +255,8 @@ interface StreamInterface
      *
      * @throws NotSeekableException if called on non-seekable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.fseek.php
      */
     public function fastForward(): void;
 
@@ -254,6 +276,8 @@ interface StreamInterface
      * @throws NotWritableException if called on non-writable stream
      *
      * @return int returns the number of bytes written to the stream
+     *
+     * @see http://php.net/manual/en/function.fwrite.php
      */
     public function write(string $string): int;
 
@@ -267,6 +291,8 @@ interface StreamInterface
      * @throws NotWritableException if called on non-writable stream
      *
      * @return int returns the number of bytes written to the stream
+     *
+     * @see http://php.net/manual/en/function.fwrite.php
      */
     public function writeLine(string $string, string $newLine = PHP_EOL): int;
 
@@ -290,6 +316,8 @@ interface StreamInterface
      *
      * @return string returns the data read from the stream, or an empty string
      *                if no bytes are available
+     *
+     * @see http://php.net/manual/en/function.fread.php
      */
     public function read(int $length): string;
 
@@ -305,6 +333,8 @@ interface StreamInterface
      * @throws RuntimeException     if an error occurs (including EOF)
      *
      * @return string returns the data read from the stream
+     *
+     * @see http://php.net/manual/en/function.fgets.php
      */
     public function readLine(int $length = 0): string;
 
@@ -325,6 +355,8 @@ interface StreamInterface
      *                       available on the stream.
      *
      * @throws RuntimeException on failure
+     *
+     * @see http://php.net/manual/en/function.stream-set-blocking.php
      */
     public function setBlocking(bool $blocking): void;
 
@@ -335,6 +367,8 @@ interface StreamInterface
      * To check that stream is remote use ::isRemote() method.
      *
      * @return bool TRUE if stream is local, FALSE otherwise
+     *
+     * @see http://php.net/manual/en/function.stream-is-local.php
      */
     public function isLocal(): bool;
 
@@ -345,6 +379,8 @@ interface StreamInterface
      * To check that stream is local use ::isLocal() method.
      *
      * @return bool TRUE if stream is remote, FALSE otherwise
+     *
+     * @see http://php.net/manual/en/function.stream-is-local.php
      */
     public function isRemote(): bool;
 
@@ -354,6 +390,8 @@ interface StreamInterface
      * @throws RuntimeException on error
      *
      * @return int Position of the file pointer, NULL for closed stream
+     *
+     * @see http://php.net/manual/en/function.ftell.php
      */
     public function tell(): ?int;
 
@@ -375,6 +413,8 @@ interface StreamInterface
      * @throws DomainException      if $length is less then 0
      * @throws NotWritableException if called on non-writable stream
      * @throws RuntimeException     on failure
+     *
+     * @see http://php.net/manual/en/function.ftruncate.php
      */
     public function truncate(int $length): void;
 
@@ -394,6 +434,8 @@ interface StreamInterface
      * @throws RuntimeException     on failure
      *
      * @return int The length of the written string
+     *
+     * @see http://php.net/manual/en/function.fputcsv.php
      */
     public function writeCsv(array $fields, string $delimiter = ',', string $enclosure = '"', string $escapeChar = '\\'): int;
 
@@ -417,6 +459,8 @@ interface StreamInterface
      * @throws RuntimeException     on failure
      *
      * @return array an indexed array containing the fields read (empty array for empty lines)
+     *
+     * @see http://php.net/manual/en/function.fgetcsv.php
      */
     public function readCsv(int $length = 0, string $delimiter = ',', string $enclosure = '"', string $escapeChar = '\\'): array;
 
@@ -428,6 +472,8 @@ interface StreamInterface
      * @throws NotReadableException if called on non-readable stream
      *
      * @return string
+     *
+     * @see http://php.net/manual/en/function.stream-get-contents.php
      */
     public function getContents(): string;
 
@@ -455,6 +501,8 @@ interface StreamInterface
      * @throws RuntimeException     on failure
      *
      * @return int Total number of bytes copied
+     *
+     * @see http://php.net/manual/en/function.stream-copy-to-stream.php
      */
     public function copyToStream(StreamInterface $targetStream, int $maxLength = null, int $chunkSize = 1024): int;
 
@@ -465,6 +513,8 @@ interface StreamInterface
      * @throws RuntimeException     on failure
      *
      * @return int number of characters read from stream and passed through to the output
+     *
+     * @see http://php.net/manual/en/function.fpassthru.php
      */
     public function output(): int;
 

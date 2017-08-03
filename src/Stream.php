@@ -474,6 +474,9 @@ class Stream extends AbstractStream
         return $read;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function copyToStream(StreamInterface $targetStream, int $maxLength = null, int $chunkSize = 1024): int
     {
         if (!$this->isReadable()) {
