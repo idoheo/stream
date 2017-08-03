@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace Idoheo\Stream;
 
-use DomainException;
+use Idoheo\Stream\Exception\DomainException;
 use Idoheo\Stream\Exception\NotLockableException;
 use Idoheo\Stream\Exception\NotReadableException;
 use Idoheo\Stream\Exception\NotSeekableException;
 use Idoheo\Stream\Exception\NotWritableException;
-use LengthException;
-use LogicException;
-use RuntimeException;
+use Idoheo\Stream\Exception\LengthException;
+use Idoheo\Stream\Exception\LogicException;
+use Idoheo\Stream\Exception\RuntimeException;
 
 /**
  * Describes a data stream.
