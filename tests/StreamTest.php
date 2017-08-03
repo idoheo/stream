@@ -1575,6 +1575,9 @@ class StreamTest extends TestCase
      */
     public function testReadCsv__failure__failRead()
     {
+        while (!$this->stream->eof()) {
+            $this->stream->readCsv();
+        }
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed reading CSV from stream.');
         $this->stream->readCsv();
