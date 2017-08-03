@@ -97,7 +97,7 @@ class Factory
      *
      * @return StreamInterface
      */
-    public function forStdin()
+    public function forStdin(): StreamInterface
     {
         return $this->forFileName('php://stdin', 'rb');
     }
@@ -107,7 +107,7 @@ class Factory
      *
      * @return StreamInterface
      */
-    public function forStdout()
+    public function forStdout(): StreamInterface
     {
         return $this->forFileName('php://stdout', 'wb');
     }
@@ -117,7 +117,7 @@ class Factory
      *
      * @return StreamInterface
      */
-    public function forStderr()
+    public function forStderr(): StreamInterface
     {
         return $this->forFileName('php://stderr', 'wb');
     }
@@ -127,7 +127,7 @@ class Factory
      *
      * @return StreamInterface
      */
-    public function forInput()
+    public function forInput(): StreamInterface
     {
         return $this->forFileName('php://input', 'rb');
     }
@@ -137,7 +137,7 @@ class Factory
      *
      * @return StreamInterface
      */
-    public function forOutput()
+    public function forOutput(): StreamInterface
     {
         return $this->forFileName('php://output', 'wb');
     }
@@ -154,7 +154,7 @@ class Factory
      *
      * @return StreamInterface
      */
-    public function forMemory(int $limit = null)
+    public function forMemory(int $limit = null): StreamInterface
     {
         if ($limit < 0) {
             throw new DomainException(
