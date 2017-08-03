@@ -99,7 +99,9 @@ class Stream extends AbstractStream
      */
     public function getMetadata(): array
     {
-        return $this->isOpen() ? \stream_get_meta_data($this->stream) : [];
+        $metadata = $this->isOpen() ? @\stream_get_meta_data($this->stream) : array();
+        $filter = function ($key) {return \is_string($key);};
+        return \array_filter( $metadata === false ? array() : $metadata, $filter, ARRAY_FILTER_USE_KEY);
     }
 
     /**
@@ -111,11 +113,9 @@ class Stream extends AbstractStream
             \clearstatcache(true, $this->getMetadataKey('uri'));
         }
 
-        return $this->isOpen()
-            ? \array_filter(\fstat($this->stream), function ($key) {
-                return \is_string($key);
-            }, ARRAY_FILTER_USE_KEY)
-            : [];
+        $stat = $this->isOpen() ? @\fstat($this->stream) : array();
+        $filter = function ($key) {return \is_string($key);};
+        return \array_filter( $stat === false ? array() : $stat, $filter, ARRAY_FILTER_USE_KEY);
     }
 
     /**
