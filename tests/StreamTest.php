@@ -197,6 +197,37 @@ class StreamTest extends TestCase
     }
 
     /**
+     * @covers ::getHandle
+     * @depends testConstruct
+     * @depends testIsOpen
+     */
+    public function testGetHandle()
+    {
+        for ($i = 1; $i <= 2; $i++) {
+            static::assertSame(
+                $this->resource,
+                $this->stream->getHandle(),
+                \sprintf(
+                    '%s::%s() failed to return expected result.',
+                    \get_class($this->stream),
+                    'getHandle'
+                )
+            );
+        }
+
+        fclose($this->resource);
+
+        static::assertNull(
+            $this->stream->getHandle(),
+            \sprintf(
+                '%s::%s() failed to return expected result.',
+                \get_class($this->stream),
+                'getHandle'
+            )
+        );
+    }
+
+    /**
      * @covers ::detach
      * @depends testConstruct
      * @depends testIsOpen

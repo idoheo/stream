@@ -48,6 +48,13 @@ interface StreamInterface
     public function close(): void;
 
     /**
+     * Returns stream resource (if present)
+     *
+     * @return resource|null Handle resource if present, NULL otherwise
+     */
+    public function getHandle();
+
+    /**
      * Separates any underlying resources from the stream.
      *
      * After the stream has been detached, the stream is in an unusable state.

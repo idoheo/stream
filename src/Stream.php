@@ -87,6 +87,14 @@ class Stream extends AbstractStream
     /**
      * {@inheritdoc}
      */
+    public function getHandle()
+    {
+        return $this->isOpen() ? $this->stream : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function detach()
     {
         list($return, $this->stream) = [$this->isOpen() ? $this->stream : null, null];
